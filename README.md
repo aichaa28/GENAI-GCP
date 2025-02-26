@@ -1,4 +1,4 @@
-# GENAI-GCP: AI-Powered Medical Chatbot
+# **GENAI-GCP: AI-Powered Medical Chatbot**
 ## 📌 Project Overview
 This project aims to develop an AI-powered medical chatbot capable of assisting users with general health-related inquiries. The chatbot leverages Natural Language Processing (NLP) and multimodal AI (Gemini 1.5) to analyze medical images and text-based queries.
 
