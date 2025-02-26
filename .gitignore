@@ -1,0 +1,8 @@
+# Fichiers sensibles
+.env
+*.log
+
+# Dossiers virtuels Python
+.venv/
+__pycache__/
+cloud-sql-proxy.exe
