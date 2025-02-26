@@ -64,7 +64,7 @@ pip install -r requirements.txt
 ```
 
 ### **3️⃣ Set up environment variables**
-- Configure API keys for **Google Gemini**, **Hugging Face**, **PostgreSQL**, etc., in `config.py`.
+- Configure API keys for **Google Gemini**, **Hugging Face**, **PostgreSQL**, etc.
 
 ### **4️⃣ Run the application**
 ```bash
@@ -76,7 +76,6 @@ uvicorn api:app --reload  # Start the FastAPI backend
 ## 📊 Data & Model Usage
 - Uses **Gemini 1.5** and **Hugging Face models** for **multimodal analysis (text & image)**.
 - Stores **conversation logs** and **feedback** for model improvement.
-- **Supports fine-tuning** with `medquad.csv` & `dataset.csv`.
 - Cloud deployment using **Google Cloud Platform (GCP)**.
 
 ---
