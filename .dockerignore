@@ -1,0 +1,18 @@
+
+# Ignorer les répertoires de modèles lourds
+**/microsoft/trocr-base-printed
+
+# Ignorer les fichiers Python compilés
+__pycache__
+
+# Ignorer les environnements virtuels
+.venv/
+
+# Ignorer les fichiers temporaires
+*.log
+*.tmp
+
+# Ignorer le fichier de configuration spécifique au système
+*.swp
+
+.env
