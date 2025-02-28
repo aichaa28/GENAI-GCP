@@ -69,3 +69,55 @@ def find_best_match(query_embedding: List[float]) -> Optional[dict]:
         "focus_area": rows[best_idx][2],
         "similarity": round(similarities[best_idx], 4)
     }
+
+
+@lru_cache(maxsize=1000)
+def get_all_embeddings_medoc() -> List[Tuple[str, str, str, str, List[float]]]:
+    """Récupère les embeddings de PostgreSQL en excluant l'ID pour optimiser les requêtes."""
+    conn = connect_db()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                f"SELECT drug, indication, side_effects, drug_interaction, embedding FROM ae_med_table WHERE embedding IS NOT NULL"
+            )
+            rows = cur.fetchall()
+
+        cleaned_rows = []
+        for row in rows:
+            try:
+                embedding = json.loads(row[4]) if row[4] is not None else []
+                cleaned_rows.append((row[0], row[1], row[2], row[3], embedding))
+            except json.JSONDecodeError:
+                print(f"Erreur de décodage JSON pour l'entrée : {row[0]}")
+
+        return cleaned_rows
+    finally:
+        conn.close()
+        
+        
+def find_best_matches_medoc(query_embedding: List[float], top_n: int = 3) -> Optional[dict]:
+    """Retourne une moyenne des similarités des N meilleurs résultats."""
+    rows = get_all_embeddings()
+    if not rows:
+        return None
+
+    docs = [row[4] for row in rows]
+    similarities = cosine_similarity([query_embedding], docs)[0]
+
+    # Sélection des N meilleures similarités
+    top_indices = np.argsort(similarities)[-top_n:]
+    avg_similarity = np.mean([similarities[i] for i in top_indices])
+
+    return {
+        "top_n_avg_similarity": round(avg_similarity, 4),
+        "top_matches": [
+            {
+                "drug": rows[i][0],
+                "indication": rows[i][1],
+                "side_effects": rows[i][2],
+                "drug_interaction": rows[i][3],
+                "similarity": round(similarities[i], 4)
+            }
+            for i in top_indices
+        ]
+    }

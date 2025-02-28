@@ -1,58 +1,49 @@
 """
-This module contains utility functions 
-for evaluating and logging metrics for the Gemini AI model.
+This module contains utility functions
+for evaluating and logging metrics for the Gemini AI model,
+including OCR-based text extraction from medication images.
 """
-import os
-import csv
-from typing import List, Dict
-from sklearn.metrics.pairwise import cosine_similarity
-from rouge_score import rouge_scorer
+
+from typing import List
+from PIL import Image
+from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 from sentence_transformers import SentenceTransformer
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from config import API_KEY
 
-# Load SentenceTransformer model
-embedding_model = SentenceTransformer(
-    "sentence-transformers/all-mpnet-base-v2")
+# Load SentenceTransformer model for embeddings
+embedding_model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 
 # Initialize Gemini
-# Initialize Gemini with API Key
-llm = ChatGoogleGenerativeAI(
-    model="gemini-1.5-pro", temperature=0.5, google_api_key=API_KEY)
+llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro", temperature=0.5, google_api_key=API_KEY)
+
+# Load TrOCR model and processor
+processor = TrOCRProcessor.from_pretrained("microsoft/trocr-large-printed")
+model = VisionEncoderDecoderModel.from_pretrained("microsoft/trocr-large-printed")
+
+
+def extract_text_from_image(image_path: str) -> str:
+    """
+    Extracts text from a medication image using TrOCR.
+    
+    Args:
+        image_path (str): Path to the image file.
+    
+    Returns:
+        str: Extracted text from the image.
+    """
+    image = Image.open(image_path).convert("RGB")
+    pixel_values = processor(image, return_tensors="pt").pixel_values
+    generated_ids = model.generate(pixel_values)
+    extracted_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+    
+    return extracted_text
 
 
 def generate_embedding(text: str) -> List[float]:
     """Generate an embedding vector for the given text."""
     return embedding_model.encode(text, normalize_embeddings=True).tolist()
-
-
-def evaluate_metrics(query: str, answer: str, generated_answer: str) -> Dict[str, Dict[str, float]]:
-    """Evaluate similarity and quality metrics for the generated response."""
-    query_embedding = generate_embedding(query)
-    answer_embedding = generate_embedding(answer)
-    generated_answer_embedding = generate_embedding(generated_answer)
-
-    cosine_sim_answer = cosine_similarity(
-        [query_embedding], [answer_embedding])[0][0]
-    cosine_sim_generated_answer = cosine_similarity(
-        [query_embedding], [generated_answer_embedding])[0][0]
-
-    scorer = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL"])
-    rouge_scores = scorer.score(answer, generated_answer)
-
-    return {
-        "cosine_similarity": {
-            "answer": round(cosine_sim_answer, 4),
-            "generated_answer": round(cosine_sim_generated_answer, 4)
-        },
-        "sts_similarity": round(cosine_sim_generated_answer, 4),
-        "rouge_scores": {
-            "rouge1": round(rouge_scores["rouge1"].fmeasure, 4),
-            "rouge2": round(rouge_scores["rouge2"].fmeasure, 4),
-            "rougeL": round(rouge_scores["rougeL"].fmeasure, 4)
-        }
-    }
 
 
 def generate_response(question: str, context: str, language: str) -> str:
@@ -81,25 +72,50 @@ def generate_response(question: str, context: str, language: str) -> str:
     return response.content
 
 
-def log_metrics_to_csv(query: str, best_match: Dict[str, str] | None, response: str,
-                       metrics: Dict[str, Dict[str, float]], response_time: float) -> None:
-    """Log the query, response, and evaluation metrics to a CSV file."""
-    file_path = "metrics_log.csv"
-    file_exists = os.path.isfile(file_path)
+def correct_medication_name(medication_text: str) -> str:
+    """
+    Uses Gemini AI to correct OCR errors in the extracted medication name.
+    """
+    prompt_template = ChatPromptTemplate.from_template("""
+    You are an AI specialized in medication data correction.
+    Your task is to correct the name of a medication that may have errors due to OCR mistakes.
 
-    with open(file_path, mode='a', newline='', encoding='utf-8') as file:
-        writer = csv.writer(file)
-        if not file_exists:
-            writer.writerow([
-                "query", "best_match", "response", "cosine_similarity", "rouge1", "rouge2", "rougeL", "response_time"
-            ])
-        writer.writerow([
-            query,
-            best_match["answer"] if best_match else "None",
-            response,
-            metrics["cosine_similarity"].get("generated_answer", "N/A"),
-            metrics["rouge_scores"].get("rouge1", "N/A"),
-            metrics["rouge_scores"].get("rouge2", "N/A"),
-            metrics["rouge_scores"].get("rougeL", "N/A"),
-            round(response_time, 4)
-        ])
+    **Instructions:**
+    - If the extracted name is misspelled, correct it.
+    - If it is ambiguous, return the closest known medication.
+    -Prioritize well-khnow pharmaceutical brands and medecine
+    - Do not add extra words or explanations, return only the corrected name.
+
+    **Extracted Medication Name:** {medication_text}
+    """)
+
+    chain = prompt_template | llm
+    response = chain.invoke({"medication_text": medication_text})
+    
+    return response.content.strip()
+
+
+def get_medication_details(medication_name: str, language: str) -> str:
+    """Uses Gemini AI to provide practical information about a medication."""
+    
+    prompt_template = ChatPromptTemplate.from_template("""
+    You are a medical AI assistant with expertise in pharmaceuticals.
+    Provide **practical** and **concise** information about the given medication.
+
+    **Instructions:**
+    - Clearly explain why this medication is prescribed.
+    - List contraindications (who should not take it).
+    - Mention common and serious side effects.
+    - If applicable, suggest precautions or interactions with other drugs.
+    - Ensure accuracy and use reliable medical knowledge.
+
+    **Medication:** {medication_name}
+    **Language:** {language}
+    """)
+
+    chain = prompt_template | llm
+    response = chain.invoke({"medication_name": medication_name, "language": language})
+    
+    return response.content
+
+
