@@ -18,9 +18,8 @@ embedding_model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 # Initialize Gemini
 llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro", temperature=0.5, google_api_key=API_KEY)
 
-# Load TrOCR model and processor
-processor = TrOCRProcessor.from_pretrained("microsoft/trocr-large-printed")
-model = VisionEncoderDecoderModel.from_pretrained("microsoft/trocr-large-printed")
+processor = TrOCRProcessor.from_pretrained("microsoft/trocr-base-printed", use_fast=True)
+model = VisionEncoderDecoderModel.from_pretrained("microsoft/trocr-base-printed")
 
 
 def extract_text_from_image(image_path: str) -> str:
@@ -119,3 +118,4 @@ def get_medication_details(medication_name: str, language: str) -> str:
     return response.content
 
 
+print("hi")

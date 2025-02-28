@@ -1,7 +1,5 @@
 import os
 import csv
-import json
-import numpy as np
 from typing import Dict
 from rouge_score import rouge_scorer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -61,28 +59,37 @@ def log_metrics_to_csv(query: str, best_match: Dict[str, str] | None, response: 
         ])
 
 
-def evaluate_metrics_medoc(question: str, best_match: dict, generated_response: str) -> Dict[str, float]:    
+def evaluate_metrics_medoc(question: str, best_match: dict) -> Dict[str, float]:
+    """Evaluate metrics for the medical match, including BLEU and cosine similarity.
+
+    Args:
+        question (str): The question being asked.
+        best_match (dict): The best match containing medication information.
+
+    Returns:
+        Dict[str, float]: A dictionary containing BLEU score and 
+        cosine similarity between the question and the medication name.
+    """
     metrics = {}
 
     if not best_match or "drug" not in best_match:
         return {"error": "No valid medication match found"}
 
-    #BLEU Score (similarité textuelle entre la question et le nom du médicament)
+    # BLEU Score (similarité textuelle entre la question et le nom du médicament)
     reference = [question.lower().split()]
     candidate = best_match["drug"].lower().split()
     bleu_score = sentence_bleu(reference, candidate)
     metrics["BLEU"] = round(bleu_score, 4)
 
-    #Similarité Cosine entre la question et le médicament trouvé
+    # Similarité Cosine entre la question et le médicament trouvé
     try:
         question_embedding = generate_embedding(question)
         drug_embedding = generate_embedding(best_match["drug"])
-        similarity = cosine_similarity([question_embedding], [drug_embedding])[0][0]
+        similarity = cosine_similarity(
+            [question_embedding], [drug_embedding])[0][0]
         metrics["cosine_similarity"] = round(similarity, 4)
-    except Exception as e:
+    except ValueError as e:  # Specific exception caught here
         print(f"Erreur lors du calcul de la similarité cosine : {e}")
         metrics["cosine_similarity"] = 0.0  # Valeur par défaut en cas d'erreur
 
     return metrics
-
-

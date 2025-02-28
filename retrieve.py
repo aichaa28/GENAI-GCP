@@ -33,7 +33,8 @@ def get_all_embeddings() -> List[Tuple[str, str, str, List[float]]]:
     try:
         with conn.cursor() as cur:
             cur.execute(
-                f"SELECT answer, source, focus_area, embedding FROM {TABLE_NAME} WHERE embedding IS NOT NULL")
+                f"""SELECT answer, source, focus_area,
+                embedding FROM {TABLE_NAME} WHERE embedding IS NOT NULL""")
             rows = cur.fetchall()
 
         # Vérifier et convertir les embeddings valides uniquement
@@ -78,7 +79,8 @@ def get_all_embeddings_medoc() -> List[Tuple[str, str, str, str, List[float]]]:
     try:
         with conn.cursor() as cur:
             cur.execute(
-                f"SELECT drug, indication, side_effects, drug_interaction, embedding FROM ae_med_table WHERE embedding IS NOT NULL"
+                """SELECT drug, indication, side_effects, drug_interaction,
+                embedding FROM ae_med_table WHERE embedding IS NOT NULL"""
             )
             rows = cur.fetchall()
 
@@ -86,15 +88,16 @@ def get_all_embeddings_medoc() -> List[Tuple[str, str, str, str, List[float]]]:
         for row in rows:
             try:
                 embedding = json.loads(row[4]) if row[4] is not None else []
-                cleaned_rows.append((row[0], row[1], row[2], row[3], embedding))
+                cleaned_rows.append(
+                    (row[0], row[1], row[2], row[3], embedding))
             except json.JSONDecodeError:
                 print(f"Erreur de décodage JSON pour l'entrée : {row[0]}")
 
         return cleaned_rows
     finally:
         conn.close()
-        
-        
+
+
 def find_best_matches_medoc(query_embedding: List[float], top_n: int = 3) -> Optional[dict]:
     """Retourne une moyenne des similarités des N meilleurs résultats."""
     rows = get_all_embeddings()

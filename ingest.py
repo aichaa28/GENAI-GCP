@@ -1,3 +1,6 @@
+"""
+ingest file
+"""
 import pandas as pd
 import psycopg2
 from config import DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD
@@ -15,7 +18,8 @@ df = pd.read_csv("C:/Users/Aycha/Desktop/dataset_utf8.csv", encoding="utf-8")
 for _, row in df.iterrows():
     try:
         cursor.execute(
-            "INSERT INTO ae_qa_table (question, answer, source, focus_area) VALUES (%s, %s, %s, %s)",
+            """INSERT INTO ae_qa_table 
+            (question, answer, source, focus_area) VALUES (%s, %s, %s, %s)""",
             (row["question"], row["answer"], row["source"], row["focus_area"])
         )
     except Exception as e:

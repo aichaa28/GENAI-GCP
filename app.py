@@ -13,7 +13,8 @@ from config import API_KEY
 API_URL = "http://127.0.0.1:8000/answer"
 
 # ------------------- STREAMLIT INTERFACE -------------------
-st.set_page_config(page_title="Patient Assistant", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="Patient Assistant",
+                   page_icon="🩺", layout="wide")
 
 # Global Styling to ensure uniformity across all tabs
 st.markdown(
@@ -108,7 +109,7 @@ with tabs[1]:
 
     if "history" not in st.session_state:
         st.session_state.history = []
-   
+
     for chat in st.session_state.history:
         with st.chat_message("user"):
             st.markdown(f"**🗨️ {chat['question']}**")
@@ -116,11 +117,13 @@ with tabs[1]:
             st.markdown(f"**📝 Answer:** {chat['response']}")
             st.markdown(f"🔍 **Source:** {chat['sources']}")
             st.markdown(f"📌 **Focus Area:** {chat['focus_area']}")
-            st.markdown(f"💡 **Similarity Score:** {chat['similarity']} ({chat['similarity_type']})")
-   
+            st.markdown(
+                f"💡 **Similarity Score:** {chat['similarity']} ({chat['similarity_type']})")
+
     question = st.chat_input("Type your message...")
     if question:
-        response = requests.post(API_URL, json={"question": question}, timeout=500)
+        response = requests.post(
+            API_URL, json={"question": question}, timeout=500)
         if response.status_code == 200:
             data = response.json()
             chatbot_response = data.get('answer')
@@ -159,43 +162,45 @@ with tabs[2]:
         unsafe_allow_html=True
     )
 
-    uploaded_image = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+    uploaded_image = st.file_uploader(
+        "Upload an image", type=["jpg", "jpeg", "png"])
 
     if uploaded_image is not None:
         st.image(uploaded_image, caption="Uploaded Image")
 
         with st.spinner("Processing Medication Image..."):
             files = {"image": uploaded_image.getvalue()}
-            response = requests.post("http://127.0.0.1:8000/process_medication_image", files=files)
+            response = requests.post(
+                "http://127.0.0.1:8000/process_medication_image", files=files,timeout=500)
 
             if response.status_code == 200:
                 data = response.json()
                 corrected_name = data.get("corrected_name", "Unknown")
-                medication_info = data.get("medication_info", "No information available.")
+                medication_info = data.get(
+                    "medication_info", "No information available.")
 
                 st.subheader("🔍 Analysis Result")
                 st.write(f"**Corrected Medication Name:** {corrected_name}")
 
                 # Demander à l'utilisateur s'il valide le nom
-                user_confirmation = st.radio("Is this medication name correct?", ("Yes", "No"), index=0)
+                user_confirmation = st.radio(
+                    "Is this medication name correct?", ("Yes", "No"), index=0)
 
                 if user_confirmation == "Yes":
                     st.write(medication_info)  # Affiche directement les infos
                 else:
                     # L'utilisateur peut entrer le nom correct
-                    user_corrected_name = st.text_input("Enter the correct medication name")
+                    user_corrected_name = st.text_input(
+                        "Enter the correct medication name")
 
                     if user_corrected_name:
                         if st.button("Generate Updated Medication Info"):
-                            response_2 = get_medication_details(user_corrected_name,"english")
+                            response_2 = get_medication_details(
+                                user_corrected_name, "english")
                             st.write(response_2)
-                            
+
             else:
                 st.error("Error processing the image.")
-
-
-
-
 
 
 # ------------------- 📊 FEEDBACK & ANALYSIS -------------------
@@ -209,5 +214,5 @@ with tabs[3]:
         """,
         unsafe_allow_html=True
     )
-   
+
     generate_and_display_graphs()

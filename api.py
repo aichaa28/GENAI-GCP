@@ -7,12 +7,11 @@ import shutil
 import os
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from pydantic import BaseModel
-from agents import generate_embedding, generate_response
+from agents import (generate_embedding, generate_response,
+                    extract_text_from_image, correct_medication_name,
+                    get_medication_details)
 from metrics import evaluate_metrics, log_metrics_to_csv, evaluate_metrics_medoc
-from agents import extract_text_from_image, correct_medication_name, get_medication_details
-
 from retrieve import find_best_match, find_best_matches_medoc
-
 
 
 # Initialize FastAPI
@@ -21,6 +20,9 @@ app = FastAPI()
 
 # Model for API requests
 class QueryRequest(BaseModel):
+    """ Représente une requête pour poser une question
+    à l'API. Cette classe contient 
+la question, la température de la réponse, et la langue. """
     question: str
     temperature: float = 0.7
     language: str = "english"
@@ -29,6 +31,10 @@ class QueryRequest(BaseModel):
 # Endpoint to get sources
 @app.post("/get_sources")
 def get_sources(request: QueryRequest):
+    """ Récupère les sources correspondant à la question envoyée. 
+    Args: request
+    (QueryRequest): La requête contenant la question, la température et la langue. 
+    Returns: dict: Le meilleur match des sources. """
     start_time = time.time()
     query_embedding = generate_embedding(request.question)
     best_match = find_best_match(query_embedding)
@@ -84,11 +90,13 @@ def answer(request: QueryRequest):
 def get_medication_info(request: QueryRequest):
     start_time = time.time()
     query_embedding = generate_embedding(request.question)
-    best_match = find_best_matches_medoc(query_embedding)  # Utilisation de la nouvelle fonction
+    # Utilisation de la nouvelle fonction
+    best_match = find_best_matches_medoc(query_embedding)
 
     if best_match:
         response_time = time.time() - start_time
-        print(f"Response time for get_medication_info: {response_time:.4f} seconds")
+        print(
+            f"Response time for get_medication_info: {response_time:.4f} seconds")
         return {
             "drug": best_match["drug"],
             "indication": best_match["indication"],
@@ -99,10 +107,14 @@ def get_medication_info(request: QueryRequest):
         }
 
     response_time = time.time() - start_time
-    print(f"Response time for get_medication_info: {response_time:.4f} seconds")
-    raise HTTPException(status_code=404, detail="No relevant medication found.")
+    print(
+        f"Response time for get_medication_info: {response_time:.4f} seconds")
+    raise HTTPException(
+        status_code=404, detail="No relevant medication found.")
 
 # Endpoint pour générer une réponse enrichie avec Gemini
+
+
 @app.post("/answer_medication")
 def answer_medication(request: QueryRequest):
     start_time = time.time()
@@ -114,13 +126,15 @@ def answer_medication(request: QueryRequest):
         print(f"No match found: {response_time:.4f} s")
         return {"message": "I couldn't find relevant medication information. Answering based on general knowledge."}
 
-    response = generate_response(request.question, best_match['drug'], request.language)
+    response = generate_response(
+        request.question, best_match['drug'], request.language)
 
-    metrics = evaluate_metrics_medoc(request.question, best_match["drug"], response)
+    metrics = evaluate_metrics_medoc(
+        request.question, best_match["drug"], response)
     print(f"Metrics: {metrics}")
     response_time = time.time() - start_time
     print(f"Response time for answer_medication: {response_time:.4f} s")
-    
+
     return {
         "answer": response,
         "drug": best_match["drug"],
@@ -133,6 +147,8 @@ def answer_medication(request: QueryRequest):
     }
 
 # Endpoint pour traiter une image de médicament
+
+
 @app.post("/process_medication_image")
 async def process_medication(image: UploadFile = File(...)):
     """

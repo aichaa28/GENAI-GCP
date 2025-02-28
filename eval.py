@@ -39,15 +39,20 @@ def evaluate_chatbot(n):
             bleu_scores.append(metrics["sts_similarity"])
 
             # F1 Score (token-matching)
-            true_tokens, pred_tokens = set(true_answer.split()), set(predicted_answer.split())
+            true_tokens, pred_tokens = set(
+                true_answer.split()), set(predicted_answer.split())
             common_tokens = true_tokens.intersection(pred_tokens)
-            precision = len(common_tokens) / len(pred_tokens) if pred_tokens else 0
-            recall = len(common_tokens) / len(true_tokens) if true_tokens else 0
-            f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) else 0
+            precision = len(common_tokens) / \
+                len(pred_tokens) if pred_tokens else 0
+            recall = len(common_tokens) / \
+                len(true_tokens) if true_tokens else 0
+            f1 = 2 * (precision * recall) / (precision +
+                                             recall) if (precision + recall) else 0
             f1_scores.append(f1)
 
             # Cosine Similarity
-            cosine_similarities.append(metrics["cosine_similarity"]["generated_answer"])
+            cosine_similarities.append(
+                metrics["cosine_similarity"]["generated_answer"])
 
             # ROUGE Scores
             rouge_scores_list.append(metrics["rouge_scores"])
@@ -75,4 +80,4 @@ def evaluate_chatbot(n):
 
 
 if __name__ == "__main__":
-    evaluate_chatbot(30)
+    evaluate_chatbot(2)
