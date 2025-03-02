@@ -32,21 +32,36 @@ This project aims to develop an AI-powered medical chatbot capable of assisting 
 ## 🏗 Project Structure
 ```
 GENAI-GCP/
-│── agents.py          # Manages AI agents & Gemini interactions
-│── api.py             # FastAPI backend to process queries
-│── app.py             # Streamlit frontend chatbot UI
-│── config.py          # Configuration & API keys
-│── dataset.csv        # Medical dataset for reference
-│── eval.py            # Evaluation metrics for chatbot responses
-│── feedback.csv       # Logs user feedback
-│── graph.py           # Generates analytics & visualizations
-│── ingest.py          # Loads and preprocesses dataset
-│── medquad.csv        # Medical QA dataset for model training
-│── metrics_log.csv    # Tracks chatbot response metrics
-│── retrieve.py        # Fetches embeddings & best matches
-│── requirements.txt   # Python dependencies
-│── test_connection.py # Database connectivity test
-│── README.md          # Project documentation (this file)
+│── backend/
+│   ├── agents.py          # Manages AI agents & Gemini interactions
+│   ├── api.py             # FastAPI backend to process queries
+│   ├── config.py          # Configuration & API keys
+│   ├── ingest.py          # Loads and preprocesses dataset
+│   └── retrieve.py        # Fetches embeddings & best matches
+│
+│── frontend/
+│   ├── app.py             # Streamlit frontend chatbot UI
+│
+│── graph/
+│   ├── graph.py           # Generates analytics & visualizations
+│   └── Images             # Some images of our graphs
+│
+│── dataset/
+│   ├── dataset.csv        # Medical dataset for reference
+│   ├── medquad.csv        # Medical QA dataset for model training
+│   ├── medoc_info.csv     # Medecine QA dataset for model training
+│   └── feedback.csv       # Logs user feedback
+│
+│── evaluation/
+│   ├── eval.py            # Evaluation metrics for chatbot responses
+│   └── metrics_log.csv    # Tracks chatbot response metrics
+│
+├── Dockerfile         # Dockerfile for building the frontend container
+│── Dockerfile_api     # Dockerfile for building the backend container
+│
+│── requirements.txt       # Python dependencies
+│── README.md              # Project documentation (this file)
+
 ```
 
 ---
