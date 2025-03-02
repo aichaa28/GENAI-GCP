@@ -7,10 +7,11 @@ import shutil
 import os
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from pydantic import BaseModel
-from agents import (generate_embedding, generate_response,
+from Backend.agents import (generate_embedding, generate_response,
                     extract_text_from_image, correct_medication_name,
                     get_medication_details)
-from metrics import evaluate_metrics, log_metrics_to_csv, evaluate_metrics_medoc
+from Evaluation.metrics import (evaluate_metrics, log_metrics_to_csv,
+                                evaluate_metrics_medoc)
 from retrieve import find_best_match, find_best_matches_medoc
 
 

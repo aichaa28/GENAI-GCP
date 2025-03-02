@@ -1,9 +1,9 @@
 """This module evaluates the chatbot."""
 import requests
 import numpy as np
-from config import TABLE_NAME
-from retrieve import connect_db
-from metrics import evaluate_metrics
+from Backend.config import TABLE_NAME
+from Backend.retrieve import connect_db
+from Evaluation.metrics import evaluate_metrics
 
 
 def get_random_questions(n):

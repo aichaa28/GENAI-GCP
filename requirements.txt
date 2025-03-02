@@ -6,7 +6,7 @@ gradio
 langchain
 openai
 sqlalchemy
-psycopg2
+psycopg2-binary
 faiss-cpu
 python-dotenv
 sentence-transformers
@@ -28,8 +28,6 @@ langchain-google-vertexai
 langchain-google-cloud-sql-pg
 langchain_core
 langchain_google_genai
-langgraph
-langgraph.agents
 rouge-score
 torch
 transformers

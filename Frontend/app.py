@@ -5,9 +5,9 @@ It provides an intuitive user interface for interacting with the chatbot, analyz
 
 import streamlit as st
 import requests
-from graph import generate_and_display_graphs
-from agents import generate_response, get_medication_details
-from config import API_KEY
+from graphs.graph import generate_and_display_graphs
+from Backend.agents import generate_response, get_medication_details
+
 
 # ------------------- CONFIGURATION -------------------
 API_URL = "http://127.0.0.1:8000/answer"

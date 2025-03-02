@@ -118,4 +118,3 @@ def get_medication_details(medication_name: str, language: str) -> str:
     return response.content
 
 
-print("hi")

@@ -15,11 +15,11 @@ def connect_db():
     """Establish a secure connection to PostgreSQL."""
     try:
         return psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST,
-            port=DB_PORT
+            dbname=DB_NAME.encode("utf-8").decode("utf-8"),
+            user=DB_USER.encode("utf-8").decode("utf-8"),
+            password=DB_PASSWORD.encode("utf-8").decode("utf-8"),
+            host=DB_HOST.encode("utf-8").decode("utf-8"),
+            port=DB_PORT.encode("utf-8").decode("utf-8")
         )
     except psycopg2.Error as e:
         raise HTTPException(
@@ -61,7 +61,7 @@ def find_best_match(query_embedding: List[float]) -> Optional[dict]:
     similarities = cosine_similarity([query_embedding], docs)[0]
     best_idx = np.argmax(similarities)
 
-    if similarities[best_idx] < 0.75:
+    if similarities[best_idx] < 0.5:
         return None
 
     return {
