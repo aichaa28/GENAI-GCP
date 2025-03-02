@@ -65,7 +65,7 @@ GENAI-GCP/
 ```
 ## Model Card
 
-![Model Card](/model_card)
+![Model Card](Model_card)
 ---
 ## 🔧 Installation & Setup
 
