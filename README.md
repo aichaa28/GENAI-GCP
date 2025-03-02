@@ -63,7 +63,9 @@ GENAI-GCP/
 │── README.md              # Project documentation (this file)
 
 ```
+## Model Card
 
+![Model Card](/model_card)
 ---
 ## 🔧 Installation & Setup
 
