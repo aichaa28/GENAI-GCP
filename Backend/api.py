@@ -7,11 +7,10 @@ import shutil
 import os
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from pydantic import BaseModel
-from Backend.agents import (generate_embedding, generate_response,
+from agents import (generate_embedding, generate_response,
                     extract_text_from_image, correct_medication_name,
                     get_medication_details)
-from Evaluation.metrics import (evaluate_metrics, log_metrics_to_csv,
-                                evaluate_metrics_medoc)
+
 from retrieve import find_best_match, find_best_matches_medoc
 
 
@@ -66,22 +65,14 @@ def answer(request: QueryRequest):
 
     response = generate_response(
         request.question, best_match['answer'], request.language)
-
-    metrics = evaluate_metrics(
-        request.question, best_match["answer"], response)
-    print(f"Metrics: {metrics}")
-    response_time = time.time() - start_time
-    print(
-        f"Response time for answer: {response_time:.4f} s")
-    log_metrics_to_csv(request.question, best_match,
-                       response, metrics, response_time)
+                response, metrics, response_time)
 
     return {
         "answer": response,
         "source": best_match["source"],
         "focus_area": best_match["focus_area"],
         "similarity": best_match["similarity"],
-        "metrics": metrics,
+   
         "response_time": round(response_time, 4)
     }
 
@@ -130,12 +121,7 @@ def answer_medication(request: QueryRequest):
     response = generate_response(
         request.question, best_match['drug'], request.language)
 
-    metrics = evaluate_metrics_medoc(
-        request.question, best_match["drug"], response)
-    print(f"Metrics: {metrics}")
-    response_time = time.time() - start_time
-    print(f"Response time for answer_medication: {response_time:.4f} s")
-
+    
     return {
         "answer": response,
         "drug": best_match["drug"],
@@ -143,7 +129,7 @@ def answer_medication(request: QueryRequest):
         "side_effects": best_match["side_effects"],
         "drug_interaction": best_match["drug_interaction"],
         "similarity": best_match["similarity"],
-        "metrics": metrics,
+      
         "response_time": round(response_time, 4)
     }
 
