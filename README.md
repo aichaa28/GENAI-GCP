@@ -35,6 +35,7 @@ GENAI-GCP/
 │── backend/
 │   ├── agents.py          # Manages AI agents & Gemini interactions
 │   ├── api.py             # FastAPI backend to process queries
+│   ├── eval2.py          # LLM evoluation of the model
 │   ├── config.py          # Configuration & API keys
 │   ├── ingest.py          # Loads and preprocesses dataset
 │   └── retrieve.py        # Fetches embeddings & best matches
